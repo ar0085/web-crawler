@@ -29,8 +29,11 @@ cd web-crawler
 
 
 🛠️ Example Usage
-crawl https://example.com 2
 
+
+    crawl https://example.com 2
+
+    <<RESULT>>
     Crawls https://example.com (depth 1).
     Crawls all linked pages from the main page (depth 2).
     Downloads all images found on these pages.
