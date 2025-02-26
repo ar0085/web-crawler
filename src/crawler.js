@@ -1,7 +1,27 @@
-const { extractImages, extractLinks } = require("./parser");
+const {
+  extractImages,
+  extractLinks,
+  extractImagesUsingPuppeteer,
+  extractBackgroundImages,
+  extractSVGs,
+} = require("./parser");
 const { saveImage } = require("./downloader");
 
+const fs = require("fs");
+const path = require("path");
+
+const INDEX_FILE = path.join(__dirname, "../images");
+
+const clearImagesFolder = () => {
+  if (fs.existsSync(INDEX_FILE)) {
+    fs.rmSync(INDEX_FILE, { recursive: true, force: true });
+    console.log("Removed existing 'images'");
+  }
+  fs.mkdirSync(INDEX_FILE, { recursive: true });
+};
+
 async function crawl(startUrl, maxDepth) {
+  clearImagesFolder();
   let visited = new Set();
   let queue = [{ url: startUrl, depth: 1 }]; // Start at depth 1
 
@@ -13,8 +33,11 @@ async function crawl(startUrl, maxDepth) {
     console.log(`Crawling: ${url} (Depth ${depth})`);
 
     // Extract and download images from the page
-    const images = await extractImages(url);
-    for (const imgUrl of images) {
+    const images1 = await extractImages(url);
+    const images2 = await extractImagesUsingPuppeteer(url);
+    const images3 = await extractBackgroundImages(url);
+    const svgs = await extractSVGs(url);
+    for (const imgUrl of [...images1, ...images2, ...images3, ...svgs]) {
       await saveImage(imgUrl, url, depth);
     }
 
